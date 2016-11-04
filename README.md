@@ -79,31 +79,6 @@ func init() {
 func main() {}
 ```
 
-### Using [Iris][iris-github]
-
-```sh
-go get -u github.com/kataras/iris/iris
-```
-```go
-package main
-
-import (
-  "github.com/eawsy/aws-lambda-go-net/service/lambda/runtime/net"
-  "github.com/kataras/iris"
-)
-
-func handle(ctx *iris.Context) {
-  ctx.Write("Hello, %s!", ctx.Param("name"))
-}
-
-func init() {
-  iris.Get("/hello/:name", handle)
-  go iris.Serve(net.Listener())
-}
-
-func main() {}
-```
-
 ### Using [Gorilla][gorilla-github]
 
 ```sh
@@ -174,7 +149,6 @@ its affiliates in the United States and/or other countries.
 [go-net-listener]: https://golang.org/pkg/net/#Listener
 [go-http-pkg]: https://golang.org/pkg/net/http/
 [gin-github]: https://github.com/gin-gonic/gin
-[iris-github]: https://github.com/kataras/iris
 [gorilla-github]: https://github.com/gorilla/mux
 [runtime-badge]: http://img.shields.io/badge/runtime-go-ef6c00.svg?style=flat-square
 [api-badge]: http://img.shields.io/badge/api-godoc-7986cb.svg?style=flat-square
