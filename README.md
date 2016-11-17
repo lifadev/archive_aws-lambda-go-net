@@ -16,7 +16,7 @@
 [AWS API Gateway][aws-gtw-home] is a fully managed service that makes it easy for developers to create, publish, 
 maintain, monitor, and secure APIs at any scale. 
 
-This projects provides an AWS Lambda [network interface for Go][go-net-listener]. You can leverage AWS Lambda and 
+This project provides an AWS Lambda [network interface for Go][go-net-listener]. You can leverage AWS Lambda and 
 AWS API Gateway to handle web requests using *any* Go application framework.
 
 ## Preview
