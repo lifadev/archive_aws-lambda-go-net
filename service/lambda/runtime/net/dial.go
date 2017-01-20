@@ -14,10 +14,11 @@
 // limitations under the License.
 //
 
-/*
-Package net provides network I/O interface for AWS Lambda Go runtime similar to
-standard Go TCP, UDP, etc. network interfaces.
-It allows to port existing applications, relying on Go net/* packages, to AWS
-Lambda, without modification.
-*/
 package net
+
+import "net"
+
+// Listen returns an AWS Lambda listener as a generic Go net.Listener.
+func Listen() net.Listener {
+	return ListenLambda()
+}

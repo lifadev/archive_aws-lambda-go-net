@@ -15,9 +15,9 @@
 //
 
 /*
-Package net provides network I/O interface for AWS Lambda Go runtime similar to
-standard Go TCP, UDP, etc. network interfaces.
-It allows to port existing applications, relying on Go net/* packages, to AWS
-Lambda, without modification.
+Package apigatewayproxy provides Amazon API Gateway Lambda Proxy implementation
+compatible with the Go net/http package.
+It allows to port exsiting Go HTTP applications to AWS Lambda, without
+modification.
 */
-package net
+package apigatewayproxy

@@ -1,158 +1,218 @@
-[<img src="_asset/powered-by-aws.png" alt="Powered by Amazon Web Services" align="right">][aws-home]
-[<img src="_asset/created-by-eawsy.png" alt="Created by eawsy" align="right">][eawsy-home]
+<a id="top" name="top"></a>
+[<img src="_asset/logo_powered-by-aws.png" alt="Powered by Amazon Web Services" align="right">][aws-home]
+[<img src="_asset/logo_created-by-eawsy.png" alt="Created by eawsy" align="right">][eawsy-home]
 
 # eawsy/aws-lambda-go-net
-> A seamless way to execute Go web applications on AWS Lambda and AWS API Gateway.
 
-[![Runtime][runtime-badge]][eawsy-runtime]
-[![Api][api-badge]][eawsy-godoc]
-[![Chat][chat-badge]][eawsy-gitter]
-![Status][status-badge]
-[![License][license-badge]](LICENSE)
-<sup>•</sup> <sup>•</sup> <sup>•</sup>
-[![Hire us][hire-badge]][eawsy-hire-form]
+> Network I/O interface for AWS Lambda Go runtime.
 
-[AWS Lambda][aws-lambda-home] lets you run code without provisioning or managing servers. 
-[AWS API Gateway][aws-gtw-home] is a fully managed service that makes it easy for developers to create, publish, 
-maintain, monitor, and secure APIs at any scale. 
+[![Api][badge-api]][eawsy-godoc]
+[![Status][badge-status]](#top)
+[![License][badge-license]](LICENSE)
+[![Chat][badge-chat]][eawsy-chat]
 
-This project provides an AWS Lambda [network interface for Go][go-net-listener]. You can leverage AWS Lambda and 
-AWS API Gateway to handle web requests using *any* Go application framework.
+[AWS Lambda][aws-lambda-home] lets you run code without provisioning or managing servers. With 
+[eawsy/aws-lambda-go-shim][eawsy-runtime], you can author your Lambda function code in Go. This project provides access 
+to [low-level networking primitives][misc-go-pkg-net] and allows you for example to port your existing 
+[Go HTTP][misc-go-pkg-http] applications to [Amazon API Gateway][aws-apigateway-home] & AWS Lambda, 
+*without modification*.
 
-## Preview
+[<img src="_asset/misc_arrow-up.png" align="right">](#top)
+## Quick Hands-On
 
-> Below are some examples with popular Go frameworks. These examples are not exhaustive.
-  **You are free to use anything you want!**
+> For step by step instructions on how to author your AWS Lambda function code in Go, see 
+  [eawsy/aws-lambda-go-shim][eawsy-runtime].
+  Vanilla Go `net/http` package is used for the sake of simplicity. You are free to use your favorite Go Web framework.
 
-```sh
-go get -u -d github.com/eawsy/aws-lambda-go-net/...
-```
-
-### Using [Go][go-http-pkg]
+[<img src="_asset/misc_arrow-up.png" align="right">](#top)
+### Create
 
 ```go
 package main
 
-import (
-  "net/http"
+// /* Required, but no C code needed. */
+import "C"
 
-  "github.com/eawsy/aws-lambda-go-net/service/lambda/runtime/net"
+import (
+	"net/http"
+
+	"github.com/eawsy/aws-lambda-go-net/service/lambda/runtime/net"
+	"github.com/eawsy/aws-lambda-go-net/service/lambda/runtime/net/apigatewayproxy"
 )
+
+// Handle is the exported handler called by AWS Lambda.
+var Handle apigatewayproxy.Handler
+
+func init() {
+	ln := net.Listen()
+  
+  // Amazon API Gateway Binary support out of the box.
+	Handle = apigatewayproxy.New(ln, []string{"image/png"}).Handle
+
+	// Any Go framework complying with the Go http.Handler interface can be used.
+	// This includes, but is not limited to, Vanilla Go, Gin, Echo, Gorrila, etc.
+	go http.Serve(ln, http.HandlerFunc(handle))
+}
 
 func handle(w http.ResponseWriter, r *http.Request) {
-  w.Write([]byte("Hello, World!"))
+	w.Write([]byte("Hello, World!"))
 }
-
-func init() {
-  go http.Serve(net.Listener(), http.HandlerFunc(handle))
-}
-
-func main() {}
 ```
 
-### Using [Gin][gin-github]
+[<img src="_asset/misc_arrow-up.png" align="right">](#top)
+### Build
+
+> For step by step instructions on how to author your AWS Lambda function code in Go, see 
+  [eawsy/aws-lambda-go-shim][eawsy-runtime].
 
 ```sh
-go get gopkg.in/gin-gonic/gin.v1
-```
-```go
-package main
-
-import (
-  "net/http"
-
-  "github.com/eawsy/aws-lambda-go-net/service/lambda/runtime/net"
-
-  "github.com/gin-gonic/gin"
-)
-
-func handle(ctx *gin.Context) {
-  ctx.String(http.StatusOK, "Hello, %s!", ctx.Param("name"))
-}
-
-func init() {
-  r := gin.Default()
-  r.GET("/hello/:name", handle)
-  go http.Serve(net.Listener(), r)
-}
-
-func main() {}
+make
 ```
 
-### Using [Gorilla][gorilla-github]
+[<img src="_asset/misc_arrow-up.png" align="right">](#top)
+### Deploy
+
+> [AWS Serverless Application Model][aws-sam-github] (SAM) is used for the sake of simplicity. You are free to use your 
+  favorite deployment tool.
+
+```yaml
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  Function:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handler.Handle
+      Runtime: python2.7
+      CodeUri: ./package.zip
+      Events:
+        ApiRoot:
+          Type: Api
+          Properties:
+            Path: /
+            Method: GET
+Outputs:
+  URL:
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
+```
 
 ```sh
-go get -u github.com/gorilla/mux
-```
-```go
-package main
+aws cloudformation package \
+  --template-file example.sam.yaml \
+  --output-template-file example.out.yaml \
+  --s3-bucket <YOUR BUCKET NAME>
 
-import (
-  "fmt"
-  "net/http"
-
-  "github.com/eawsy/aws-lambda-go-net/service/lambda/runtime/net"
-
-  "github.com/gorilla/mux"
-)
-
-func handle(w http.ResponseWriter, r *http.Request) {
-  w.Write([]byte(fmt.Sprintf("Hello, %s!", mux.Vars(r)["name"])))
-}
-
-func init() {
-  r := mux.NewRouter()
-  r.HandleFunc("/hello/{name}", handle)
-  go http.Serve(net.Listener(), r)
-}
-
-func main() {}
+aws cloudformation deploy \
+  --template-file example.out.yaml \
+  --capabilities CAPABILITY_IAM \
+  --stack-name <YOUR STACK NAME>
 ```
 
-## Documentation
+[<img src="_asset/misc_arrow-up.png" align="right">](#top)
+### Invoke
 
-This [wiki][eawsy-wiki] is the main source of documentation for developers working with or contributing to the 
-project.
+```sh
+aws cloudformation describe-stacks \
+  --stack-name <YOUR STACK NAME>
 
+# {
+# ...
+#   "Outputs": [
+#     {
+#       "OutputKey": "URL", 
+#       "OutputValue": "https://<YOUR API URL>/"
+#     }
+#   ]
+# ...
+# }
+
+curl https://<YOUR API URL>/
+
+# Hello, World!
+```
+
+[<img src="_asset/misc_arrow-up.png" align="right">](#top)
 ## About
 
-[![eawsy](_asset/eawsy-logo.png)][eawsy-home]
+[![eawsy](_asset/logo_eawsy.png)][eawsy-home]
 
 This project is maintained and funded by Alsanium, SAS.
 
 [We][eawsy-home] :heart: [AWS][aws-home] and open source software. See [our other projects][eawsy-github], or 
-[hire us][eawsy-hire-form] to help you build modern applications on AWS.
+[hire us][eawsy-hire] to help you build modern applications on AWS.
 
+[<img src="_asset/misc_arrow-up.png" align="right">](#top)
+## Contact
+
+We want to make it easy for you, users and contributers, to talk with us and connect with each others, to share ideas, 
+solve problems and make help this project awesome. Here are the main channels we're running currently and we'd love to 
+hear from you on them.
+
+### Twitter 
+  
+[eawsyhq][eawsy-twitter] 
+
+Follow and chat with us on Twitter. 
+
+Share stories!
+
+### Gitter 
+
+[eawsy/bavardage][eawsy-chat]
+
+This is for all of you. Users, developers and curious. You can find help, links, questions and answers from all the 
+community including the core team.
+
+Ask questions!
+
+### GitHub
+
+[pull requests][eawsy-pr] & [issues][eawsy-issues]
+
+You are invited to contribute new features, fixes, or updates, large or small; we are always thrilled to receive pull 
+requests, and do our best to process them as fast as we can.
+
+Before you start to code, we recommend discussing your plans through the [eawsy/bavardage channel][eawsy-chat], 
+especially for more ambitious contributions. This gives other contributors a chance to point you in the right direction, 
+give you feedback on your design, and help you find out if someone else is working on the same thing.
+
+Write code!
+
+[<img src="_asset/misc_arrow-up.png" align="right">](#top)
 ## License
 
 This product is licensed to you under the Apache License, Version 2.0 (the "License"); you may not use this product 
 except in compliance with the License. See [LICENSE](LICENSE) and [NOTICE](NOTICE) for more information.
 
+[<img src="_asset/misc_arrow-up.png" align="right">](#top)
 ## Trademark
 
-Alsanium, eawsy, the "Created by eawsy" logo, and the "eawsy" logo are trademarks of Alsanium, SAS. or its affiliates 
-in France and/or other countries.
+Alsanium, eawsy, the "Created by eawsy" logo, and the "eawsy" logo are trademarks of Alsanium, SAS. or its affiliates in 
+France and/or other countries.
 
-Amazon Web Services, the "Powered by Amazon Web Services" logo, and AWS Lambda are trademarks of Amazon.com, Inc. or 
-its affiliates in the United States and/or other countries.
+Amazon Web Services, the "Powered by Amazon Web Services" logo, and AWS Lambda are trademarks of Amazon.com, Inc. or its 
+affiliates in the United States and/or other countries.
+
 
 [eawsy-home]: https://eawsy.com
 [eawsy-github]: https://github.com/eawsy
-[eawsy-runtime]: https://github.com/eawsy/aws-lambda-go
-[eawsy-gitter]: https://gitter.im/eawsy/bavardage
+[eawsy-runtime]: https://github.com/eawsy/aws-lambda-go-shim
+[eawsy-chat]: https://gitter.im/eawsy/bavardage
+[eawsy-twitter]: https://twitter.com/@eawsyhq
 [eawsy-godoc]: https://godoc.org/github.com/eawsy/aws-lambda-go-net/service/lambda/runtime/net
-[eawsy-wiki]: https://github.com/eawsy/aws-lambda-go-net/wiki
-[eawsy-hire-form]: https://docs.google.com/forms/d/e/1FAIpQLSfPvn1Dgp95DXfvr3ClPHCNF5abi4D1grveT5btVyBHUk0nXw/viewform
+[eawsy-hire]: https://docs.google.com/forms/d/e/1FAIpQLSfPvn1Dgp95DXfvr3ClPHCNF5abi4D1grveT5btVyBHUk0nXw/viewform
+[eawsy-pr]: https://github.com/eawsy/aws-lambda-go-net/issues?q=is:pr%20is:open
+[eawsy-issues]: https://github.com/eawsy/aws-lambda-go-net/issues?q=is:issue%20is:open
+
 [aws-home]: https://aws.amazon.com/
 [aws-lambda-home]: https://aws.amazon.com/lambda/
-[aws-gtw-home]: https://aws.amazon.com/api-gateway/
-[go-net-listener]: https://golang.org/pkg/net/#Listener
-[go-http-pkg]: https://golang.org/pkg/net/http/
-[gin-github]: https://github.com/gin-gonic/gin
-[gorilla-github]: https://github.com/gorilla/mux
-[runtime-badge]: http://img.shields.io/badge/runtime-go-ef6c00.svg?style=flat-square
-[api-badge]: http://img.shields.io/badge/api-godoc-7986cb.svg?style=flat-square
-[chat-badge]: http://img.shields.io/badge/chat-gitter-e91e63.svg?style=flat-square
-[status-badge]: http://img.shields.io/badge/status-beta-827717.svg?style=flat-square
-[license-badge]: http://img.shields.io/badge/license-apache-757575.svg?style=flat-square
-[hire-badge]: http://img.shields.io/badge/hire-eawsy-2196f3.svg?style=flat-square
+[aws-apigateway-home]: https://aws.amazon.com/api-gateway/
+[aws-sam-github]: https://github.com/awslabs/serverless-application-model
+
+[misc-go-pkg-net]: https://golang.org/pkg/net/
+[misc-go-pkg-http]: https://golang.org/pkg/net/http
+
+[badge-api]: http://img.shields.io/badge/api-godoc-7986cb.svg?style=flat-square
+[badge-chat]: http://img.shields.io/badge/chat-gitter-e91e63.svg?style=flat-square
+[badge-status]: http://img.shields.io/badge/status-beta-827717.svg?style=flat-square
+[badge-license]: http://img.shields.io/badge/license-apache-757575.svg?style=flat-square
