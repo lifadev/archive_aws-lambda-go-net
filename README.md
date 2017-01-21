@@ -45,8 +45,8 @@ var Handle apigatewayproxy.Handler
 
 func init() {
 	ln := net.Listen()
-  
-  // Amazon API Gateway Binary support out of the box.
+
+	// Amazon API Gateway Binary support out of the box.
 	Handle = apigatewayproxy.New(ln, []string{"image/png"}).Handle
 
 	// Any Go framework complying with the Go http.Handler interface can be used.
@@ -90,7 +90,12 @@ Resources:
           Type: Api
           Properties:
             Path: /
-            Method: GET
+            Method: ANY
+        ApiGreedy:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
 Outputs:
   URL:
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
