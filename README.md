@@ -50,7 +50,7 @@ func init() {
 	Handle = apigatewayproxy.New(ln, []string{"image/png"}).Handle
 
 	// Any Go framework complying with the Go http.Handler interface can be used.
-	// This includes, but is not limited to, Vanilla Go, Gin, Echo, Gorrila, etc.
+	// This includes, but is not limited to, Vanilla Go, Gin, Echo, Gorrila, Goa, etc.
 	go http.Serve(ln, http.HandlerFunc(handle))
 }
 
