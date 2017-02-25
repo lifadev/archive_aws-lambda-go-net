@@ -204,7 +204,7 @@ affiliates in the United States and/or other countries.
 [eawsy-runtime]: https://github.com/eawsy/aws-lambda-go-shim
 [eawsy-chat]: https://gitter.im/eawsy/bavardage
 [eawsy-twitter]: https://twitter.com/@eawsyhq
-[eawsy-godoc]: https://godoc.org/github.com/eawsy/aws-lambda-go-net/service/lambda/runtime/net
+[eawsy-godoc]: https://godoc.org/github.com/eawsy/aws-lambda-go-net
 [eawsy-hire]: https://docs.google.com/forms/d/e/1FAIpQLSfPvn1Dgp95DXfvr3ClPHCNF5abi4D1grveT5btVyBHUk0nXw/viewform
 [eawsy-pr]: https://github.com/eawsy/aws-lambda-go-net/issues?q=is:pr%20is:open
 [eawsy-issues]: https://github.com/eawsy/aws-lambda-go-net/issues?q=is:issue%20is:open
