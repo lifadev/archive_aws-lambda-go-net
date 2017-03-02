@@ -6,10 +6,11 @@
 
 > Network I/O interface for AWS Lambda Go runtime.
 
-[![Api][badge-api]][eawsy-godoc]
+[![Api][badge-api]][eawsy-api]
 [![Status][badge-status]](#top)
 [![License][badge-license]](LICENSE)
-[![Chat][badge-chat]][eawsy-chat]
+[![Help][badge-help]][eawsy-chat]
+[![Social][badge-social]][eawsy-twitter]
 
 [AWS Lambda][aws-lambda-home] lets you run code without provisioning or managing servers. With 
 [eawsy/aws-lambda-go-shim][eawsy-runtime], you can author your Lambda function code in Go. This project provides access 
@@ -25,13 +26,17 @@ to [low-level networking primitives][misc-go-pkg-net] and allows you for example
   Vanilla Go `net/http` package is used for the sake of simplicity. You are free to use your favorite Go Web framework.
 
 [<img src="_asset/misc_arrow-up.png" align="right">](#top)
+### Dependencies
+
+```sh
+go get -u -d github.com/eawsy/aws-lambda-go-net/...
+```
+
+[<img src="_asset/misc_arrow-up.png" align="right">](#top)
 ### Create
 
 ```go
 package main
-
-// /* Required, but no C code needed. */
-import "C"
 
 import (
 	"net/http"
@@ -204,7 +209,7 @@ affiliates in the United States and/or other countries.
 [eawsy-runtime]: https://github.com/eawsy/aws-lambda-go-shim
 [eawsy-chat]: https://gitter.im/eawsy/bavardage
 [eawsy-twitter]: https://twitter.com/@eawsyhq
-[eawsy-godoc]: https://godoc.org/github.com/eawsy/aws-lambda-go-net
+[eawsy-api]: https://godoc.org/github.com/eawsy/aws-lambda-go-net
 [eawsy-hire]: https://docs.google.com/forms/d/e/1FAIpQLSfPvn1Dgp95DXfvr3ClPHCNF5abi4D1grveT5btVyBHUk0nXw/viewform
 [eawsy-pr]: https://github.com/eawsy/aws-lambda-go-net/issues?q=is:pr%20is:open
 [eawsy-issues]: https://github.com/eawsy/aws-lambda-go-net/issues?q=is:issue%20is:open
@@ -217,7 +222,8 @@ affiliates in the United States and/or other countries.
 [misc-go-pkg-net]: https://golang.org/pkg/net/
 [misc-go-pkg-http]: https://golang.org/pkg/net/http
 
-[badge-api]: http://img.shields.io/badge/api-godoc-7986cb.svg?style=flat-square
-[badge-chat]: http://img.shields.io/badge/chat-gitter-e91e63.svg?style=flat-square
-[badge-status]: http://img.shields.io/badge/status-beta-827717.svg?style=flat-square
-[badge-license]: http://img.shields.io/badge/license-apache-757575.svg?style=flat-square
+[badge-api]: http://img.shields.io/badge/api-godoc-3F51B5.svg?style=flat-square
+[badge-status]: http://img.shields.io/badge/status-beta-009688.svg?style=flat-square
+[badge-license]: http://img.shields.io/badge/license-apache-FF5722.svg?style=flat-square
+[badge-help]: http://img.shields.io/badge/help-gitter-E91E63.svg?style=flat-square
+[badge-social]: http://img.shields.io/badge/social-twitter-03A9F4.svg?style=flat-square
