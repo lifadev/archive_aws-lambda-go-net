@@ -89,7 +89,7 @@ Resources:
     Properties:
       Handler: handler.Handle
       Runtime: python2.7
-      CodeUri: ./package.zip
+      CodeUri: ./handler.zip
       Events:
         ApiRoot:
           Type: Api
@@ -123,18 +123,10 @@ aws cloudformation deploy \
 
 ```sh
 aws cloudformation describe-stacks \
-  --stack-name <YOUR STACK NAME>
+  --stack-name <YOUR STACK NAME> \
+  --query Stacks[0].Outputs[0]
 
-# {
-# ...
-#   "Outputs": [
-#     {
-#       "OutputKey": "URL", 
-#       "OutputValue": "https://<YOUR API URL>/"
-#     }
-#   ]
-# ...
-# }
+# "https://<YOUR API URL>/"
 
 curl https://<YOUR API URL>/
 
