@@ -18,7 +18,12 @@ package net
 
 import "net"
 
-// Listen returns an AWS Lambda listener as a generic Go net.Listener.
+// Listen returns a Go net.Listener listening on a system-chosen port on the
+// local loopback interface.
 func Listen() net.Listener {
-	return ListenLambda()
+	l, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		panic(err)
+	}
+	return l
 }

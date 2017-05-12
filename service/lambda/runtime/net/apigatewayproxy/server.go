@@ -17,20 +17,17 @@
 package apigatewayproxy
 
 import (
-	"bufio"
-	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"io/ioutil"
 	"log"
-	gonet "net"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
 
 	"github.com/eawsy/aws-lambda-go-core/service/lambda/runtime"
 	"github.com/eawsy/aws-lambda-go-event/service/lambda/runtime/event/apigatewayproxyevt"
-	"github.com/eawsy/aws-lambda-go-net/service/lambda/runtime/net"
 )
 
 // Handler responds to a Lambda function invocation.
@@ -40,17 +37,16 @@ type Handler func(json.RawMessage, *runtime.Context) (*Response, error)
 // Gateway. The zero value for Server is not a valid configuration, use New
 // instead.
 type Server struct {
-	ln *net.LambdaListener
+	pt string
 	ts map[string]bool
 }
 
 // New returns an initialized server to handle requests from Amazon API Gateway.
-// The given listener must be an AWS Lambda network listener.
 // The given media types slice may be nil, if Amazon API Gateway Binary support
 // is not enabled. Otherwise, it should be an array of supported media types as
 // configured in Amazon API Gateway.
-func New(l gonet.Listener, ts []string) *Server {
-	s := &Server{l.(*net.LambdaListener), make(map[string]bool)}
+func New(ln net.Listener, ts []string) *Server {
+	s := &Server{"http://" + ln.Addr().String(), make(map[string]bool)}
 	for _, t := range ts {
 		s.ts[t] = true
 	}
@@ -66,10 +62,10 @@ type Response struct {
 	IsBase64Encoded bool              `json:"isBase64Encoded"`
 }
 
-// Handle responds to a Lambda proxy function invocation from Amazon API
+// Handle responds to an AWS Lambda proxy function invocation via Amazon API
 // Gateway.
-// It transforms the Amazon API Gateway data format to a standard HTTP request
-// format suitable for the Go net/http package. Then, it submits the data to the
+// It transforms the Amazon API Gateway Proxy event to a standard HTTP request
+// suitable for the Go net/http package. Then, it submits the data to the
 // network listener so that it can be consumed by HTTP handler. Finally, it
 // waits for the network listener to return response from handler and transmits
 // it back to Amazon API Gateway.
@@ -82,15 +78,12 @@ func (s *Server) Handle(evt json.RawMessage, ctx *runtime.Context) (gwres *Respo
 		return
 	}
 
-	var in, out bytes.Buffer
-
-	addr := &gonet.TCPAddr{IP: gonet.ParseIP(gwreq.RequestContext.Identity.SourceIP)}
-
 	u, err := url.Parse(gwreq.Path)
 	if err != nil {
 		log.Println(err)
 		return
 	}
+
 	q := u.Query()
 	for k, v := range gwreq.QueryStringParameters {
 		q.Set(k, v)
@@ -107,7 +100,7 @@ func (s *Server) Handle(evt json.RawMessage, ctx *runtime.Context) (gwres *Respo
 		dec = string(data)
 	}
 
-	req, err := http.NewRequest(gwreq.HTTPMethod, u.String(), strings.NewReader(dec))
+	req, err := http.NewRequest(gwreq.HTTPMethod, s.pt+u.String(), strings.NewReader(dec))
 	if err != nil {
 		log.Println(err)
 		return
@@ -118,6 +111,10 @@ func (s *Server) Handle(evt json.RawMessage, ctx *runtime.Context) (gwres *Respo
 	for k, v := range gwreq.Headers {
 		req.Header.Set(k, v)
 	}
+	if len(req.Header.Get("X-Forwarded-For")) == 0 {
+		req.Header.Set("X-Forwarded-For", gwreq.RequestContext.Identity.SourceIP)
+	}
+
 	hbody, err := json.Marshal(gwreq)
 	if err != nil {
 		log.Println(err)
@@ -134,11 +131,7 @@ func (s *Server) Handle(evt json.RawMessage, ctx *runtime.Context) (gwres *Respo
 
 	req.Host = gwreq.Headers["Host"]
 
-	req.Write(&in)
-
-	s.ln.Handle(addr, &in, &out)
-
-	res, err := http.ReadResponse(bufio.NewReader(&out), req)
+	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		log.Println(err)
 		return

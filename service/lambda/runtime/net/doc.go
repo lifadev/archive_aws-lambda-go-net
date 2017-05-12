@@ -15,9 +15,7 @@
 //
 
 /*
-Package net provides network I/O interface for AWS Lambda Go runtime similar to
-standard Go TCP, UDP, etc. network interfaces.
-It allows to port existing applications, relying on Go net/* packages, to AWS
-Lambda, without modification.
+Package net provides an AWS Lambda listener to ease the migration of existing
+Go HTTP applications to Amazon API Gateway & AWS Lambda.
 */
 package net

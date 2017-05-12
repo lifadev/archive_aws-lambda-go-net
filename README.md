@@ -4,7 +4,7 @@
 
 # eawsy/aws-lambda-go-net
 
-> Network I/O interface for AWS Lambda Go runtime.
+> Amazon API Gateway proxy for AWS Lambda Go runtime.
 
 [![Api][badge-api]][eawsy-api]
 [![Status][badge-status]](#top)
@@ -13,10 +13,10 @@
 [![Social][badge-social]][eawsy-twitter]
 
 [AWS Lambda][aws-lambda-home] lets you run code without provisioning or managing servers. With 
-[eawsy/aws-lambda-go-shim][eawsy-runtime], you can author your Lambda function code in Go. This project provides access 
-to [low-level networking primitives][misc-go-pkg-net] and allows you for example to port your existing 
-[Go HTTP][misc-go-pkg-http] applications to [Amazon API Gateway][aws-apigateway-home] & AWS Lambda, 
-*without modification*.
+[eawsy/aws-lambda-go-shim][eawsy-runtime], you can author your Lambda function code in Go. This project provides a 
+seamless proxy layer which translates [Amazon API Gateway][aws-apigateway-home] requests to [Go HTTP][misc-go-pkg-http] 
+requests. It allows you for example to **port your existing Go HTTP applications** to Amazon API Gateway & AWS Lambda, 
+**without modification**.
 
 [<img src="_asset/misc_arrow-up.png" align="right">](#top)
 ## Quick Hands-On
@@ -51,7 +51,8 @@ var Handle apigatewayproxy.Handler
 func init() {
 	ln := net.Listen()
 
-	// Amazon API Gateway Binary support out of the box.
+	// Amazon API Gateway binary media types are supported out of the box.
+	// If you don't send or receive binary data, you can safely set it to nil.
 	Handle = apigatewayproxy.New(ln, []string{"image/png"}).Handle
 
 	// Any Go framework complying with the Go http.Handler interface can be used.
@@ -211,7 +212,6 @@ affiliates in the United States and/or other countries.
 [aws-apigateway-home]: https://aws.amazon.com/api-gateway/
 [aws-sam-github]: https://github.com/awslabs/serverless-application-model
 
-[misc-go-pkg-net]: https://golang.org/pkg/net/
 [misc-go-pkg-http]: https://golang.org/pkg/net/http
 
 [badge-api]: http://img.shields.io/badge/api-godoc-3F51B5.svg?style=flat-square

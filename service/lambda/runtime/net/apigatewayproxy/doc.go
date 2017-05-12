@@ -15,9 +15,9 @@
 //
 
 /*
-Package apigatewayproxy provides Amazon API Gateway Lambda Proxy implementation
-compatible with the Go net/http package.
-It allows to port exsiting Go HTTP applications to AWS Lambda, without
-modification.
+Package apigatewayproxy provides a seamless proxy layer which translates Amazon
+API Gateway requests to Go HTTP requests. By leveraging the Amazon API Gateway
+Lambda Proxy mode, this package allows to port exsiting Go HTTP applications to
+Amazon API Gateway & AWS Lambda, without modification.
 */
 package apigatewayproxy
