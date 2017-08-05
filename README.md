@@ -134,6 +134,14 @@ curl https://<YOUR API URL>/
 # Hello, World!
 ```
 
+> If you want to execute your AWS Lambda function from the AWS Lambda console, please pay attention to the 
+  provided test event. This project is intended to run seamlessly behind an **Amazon API Gateway Proxy**.
+
+  <p align="center">
+    <img src="_asset/aws_config-test.png" align="center">
+  </p>
+
+
 [<img src="_asset/misc_arrow-up.png" align="right">](#top)
 ## About
 
