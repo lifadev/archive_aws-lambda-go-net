@@ -144,13 +144,13 @@ func (s *Server) Handle(evt json.RawMessage, ctx *runtime.Context) (gwres *Respo
 		log.Println(err)
 		return
 	}
+	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	res.Body.Close()
 
 	ct := res.Header.Get("Content-Type")
 	if ct == "" {
