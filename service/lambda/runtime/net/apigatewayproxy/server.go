@@ -62,6 +62,14 @@ type Response struct {
 	IsBase64Encoded bool              `json:"isBase64Encoded"`
 }
 
+func newClient() *http.Client {
+	return &http.Client{
+		CheckRedirect: func(*http.Request, []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+}
+
 // Handle responds to an AWS Lambda proxy function invocation via Amazon API
 // Gateway.
 // It transforms the Amazon API Gateway Proxy event to a standard HTTP request
@@ -131,7 +139,7 @@ func (s *Server) Handle(evt json.RawMessage, ctx *runtime.Context) (gwres *Respo
 
 	req.Host = gwreq.Headers["Host"]
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := newClient().Do(req)
 	if err != nil {
 		log.Println(err)
 		return
